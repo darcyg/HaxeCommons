@@ -26,22 +26,52 @@
 //
 //=END MIT LICENSE
 //////////////////////////////////////////////////////////////////////////////// 
-package hu.vpmedia.components.shapes;
+package hu.vpmedia.crypt;
+
+import flash.utils.ByteArray;
+/**
+ *
+ */
+class RC4ByteArray
+{
+public function new()
+{
+}
 
 /**
- * @author Andras Csizmadia
- * @version 1.0
+ *
  */
-enum EShapeType
+public static function encryptByteArray(key:String, content:ByteArray):ByteArray
 {
-    RECTANGLE;
-    ROUNDED_RECTANGLE;
-    COMPLEX_RECTANGLE;
-    ELLIPSE;
-    TRIANGLE;
-    TRIANGLES;   
-    STAR;   
-    POLYGON;     
-    PIXEL_TILE;  
-    GRAPHICS_DATA;  
+    var _key:ByteArray=Hex.toArray(Hex.fromString(key));
+    var pt:ByteArray=content;
+    var rc4:ARC4=new ARC4(_key);
+    rc4.encrypt(pt);
+    return pt;
+}
+
+/**
+ *
+ */
+public static function encryptString(key:String, content:String):ByteArray
+{
+    var _key:ByteArray=Hex.toArray(Hex.fromString(key));
+    var pt:ByteArray=Hex.toArray(Hex.fromString(content));
+    var rc4:ARC4=new ARC4(_key);
+    rc4.encrypt(pt);
+    return pt;
+}
+
+/**
+ *
+ */
+public static function decryptToByteArray(key:String, content:ByteArray):ByteArray
+{
+    var _key:ByteArray=Hex.toArray(Hex.fromString(key));
+    var pt:ByteArray=content;
+    var rc4:ARC4=new ARC4(_key);
+    rc4.init(_key);
+    rc4.decrypt(pt);
+    return pt;
+}
 }

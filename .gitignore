@@ -17,3 +17,6 @@ TestMain.hx
 TestSuite.hx
 ExampleTest.hx
 .build
+
+# Closed-source Files
+SecureZipParser.hx

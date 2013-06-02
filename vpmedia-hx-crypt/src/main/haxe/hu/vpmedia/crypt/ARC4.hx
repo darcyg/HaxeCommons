@@ -26,56 +26,102 @@
 //
 //=END MIT LICENSE
 //////////////////////////////////////////////////////////////////////////////// 
-package hu.vpmedia.components.shapes;
+package hu.vpmedia.crypt;
 
-import flash.display.Graphics;
-/**
- * @author Andras Csizmadia
- * @version 1.0
- */
-    
-class BaseGraphicsTexture implements IBaseGraphicsTexture
+import flash.utils.ByteArray;
+class ARC4
 {
-private var _width:Float;
-private var _height:Float;
-public var colorType:EGraphicsTextureType;
+private var i:Int;
+private var j:Int;
+private var S:ByteArray;
+private static inline var psize:Int=256;
 
-//--------------------------------------
-//  Constructor
-//--------------------------------------
-public function new()
+public function new(key:ByteArray=null)
 {
+    i = 0;
+    j = 0;    
+    S=new ByteArray();
+    if (key != null)
+    {
+        init(key);
+    }
 }
 
-public var width(get, set):Float;
-public var height(get, set):Float;
-
-function set_width(value:Float):Float
+public function getPoolSize():Int
 {
-    return _width=value;
-}
-function get_width():Float
-{
-    return _width;
+    return psize;
 }
 
-function set_height(value:Float):Float
+public function init(key:ByteArray):Void
 {
-    return _height=value;
-}
-function get_height():Float
-{
-    return _height;
+    var i:Int;
+    var j:Int;
+    var t:Int;
+    for (i in 0...256)
+    {
+    S[i]=i;
+    }
+    j=0;
+    for (i in 0...256)
+    {
+    j=(j + S[i] + key[i % key.length]) & 255;
+    t=S[i];
+    S[i]=S[j];
+    S[j]=t;
+    }
+    this.i=0;
+    this.j=0;
 }
 
-public function setSize(w:Float,h:Float):Void
+public function next():Int
 {
-    _width = w;
-    _height = h;
+    var t:Int;
+    i=(i + 1) & 255;
+    j=(j + S[i]) & 255;
+    t=S[i];
+    S[i]=S[j];
+    S[j]=t;
+    return S[(t + S[i]) & 255];
 }
 
-public function draw(graphics:Graphics):Void
+public function getBlockSize():Int
 {
-    // Override
+    return 1;
+}
+
+public function encrypt(block:ByteArray):Void
+{
+    var i:Int = 0;
+    var n:Int = Std.int(block.length);
+    while (i < n)
+    {
+    block[i++]^=next();
+    }
+}
+
+public function decrypt(block:ByteArray):Void
+{
+    encrypt(block); // the beauty of XOR.
+}
+
+public function dispose():Void
+{
+    var i:Int=0;
+    if (S != null)
+    {
+    for (i in 0...S.length)
+    {
+        S[i]=Std.int(Math.random() * 256);
+    }
+    S.length=0;
+    S=null;
+    }
+    this.i=0;
+    this.j=0;
+}
+
+public function toString():String
+{
+    return "rc4";
 }
 }

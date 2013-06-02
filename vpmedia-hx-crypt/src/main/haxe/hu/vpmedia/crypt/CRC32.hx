@@ -26,56 +26,74 @@
 //
 //=END MIT LICENSE
 //////////////////////////////////////////////////////////////////////////////// 
-package hu.vpmedia.components.shapes;
+package hu.vpmedia.crypt;
 
-import flash.display.Graphics;
+import flash.utils.ByteArray;
 /**
- * @author Andras Csizmadia
- * @version 1.0
+ * Computes CRC32 data checksum of a data stream.
+ * The actual CRC32 algorithm is described in RFC 1952
+ * (GZIP file format specification version 4.3).
  */
-    
-class BaseGraphicsTexture implements IBaseGraphicsTexture
+class CRC32
 {
-private var _width:Float;
-private var _height:Float;
-public var colorType:EGraphicsTextureType;
+/** The crc data checksum so far. */
+private var crc:Int;
+/** The fast CRC table. Computed once when the CRC32 class is loaded. */
+private static var crcTable:Array<Int>=makeCrcTable();
 
-//--------------------------------------
-//  Constructor
-//--------------------------------------
-public function new()
+public function new():Void
 {
 }
 
-public var width(get, set):Float;
-public var height(get, set):Float;
-
-function set_width(value:Float):Float
+/** Make the table for a fast CRC. */
+private static function makeCrcTable():Array<Int>
 {
-    return _width=value;
-}
-function get_width():Float
-{
-    return _width;
-}
-
-function set_height(value:Float):Float
-{
-    return _height=value;
-}
-function get_height():Float
-{
-    return _height;
-}
-
-public function setSize(w:Float,h:Float):Void
-{
-    _width = w;
-    _height = h;
+    var crcTable:Array<Int>=new Array();//new Array(256);
+    for (n in 0...256)
+    {
+    var c:Int=n;
+    var k:Int=8;
+    while (k>=0 )
+    {
+        if ((c & 1) != 0)
+        c=0xedb88320 ^ (c >>> 1);
+        else
+        c = c >>> 1;
+        k--;
+    }
+    crcTable[n]=c;
+    }
+    return crcTable;
 }
 
-public function draw(graphics:Graphics):Void
+/**
+ * Returns the CRC32 data checksum computed so far.
+ */
+public function getValue():Int
 {
-    // Override
+    return crc & 0xffffffff;
+}
+
+/**
+ * Resets the CRC32 data checksum as if no update was ever called.
+ */
+public function reset():Void
+{
+    crc=0;
+}
+
+/**
+ * Adds the complete byte array to the data checksum.
+ *
+ * @param buf the buffer which contains the data
+ */
+public function update(buf:ByteArray):Void
+{
+    var off:Int=0;
+    var len:Int=buf.length;
+    var c:Int=~crc;
+    while (--len >= 0)
+    c=crcTable[(c ^ buf[off++]) & 0xff] ^ (c >>> 8);
+    crc=~c;
 }
 }

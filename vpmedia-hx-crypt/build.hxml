@@ -1,0 +1,15 @@
+################################################################################
+# Haxe Build Script
+# author: Andras Csizmadia <www.vpmedia.eu>      
+# version: 1.0.0
+################################################################################
+
+#######################################
+# Compile FL swc library
+#######################################
+-swf bin/vpmedia-hx-crypt.swc
+-swf-version 11.5
+-cp src/main/haxe
+--macro include("hu.vpmedia")
+--flash-strict
+-debug
