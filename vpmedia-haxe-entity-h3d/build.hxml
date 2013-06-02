@@ -12,6 +12,7 @@
 -cp src/main/haxe
 -cp ../vpmedia-haxe-framework/src/main/haxe/
 -cp ../vpmedia-haxe-entity/src/main/haxe/
+-cp ../3rdparty-haxe-h3d/src
 -lib openfl
 -lib format
 --macro include("hu.vpmedia")
