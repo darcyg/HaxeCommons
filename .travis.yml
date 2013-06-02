@@ -22,12 +22,12 @@ before_script:
     - haxelib install openfl-compatibility || true
     - haxelib install munit || true
     - haxelib install hamcrest || true
+    - haxelib install box2d || true
     - haxelib install tilelayer || true
     - haxe -version
     - haxelib run openfl
 
 after_script:
-    - cd bin
     - ls
 
 script: gradle
