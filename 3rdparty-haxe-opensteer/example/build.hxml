@@ -1,0 +1,1 @@
+-cmd haxelib run openfl build "Main.xml" flash

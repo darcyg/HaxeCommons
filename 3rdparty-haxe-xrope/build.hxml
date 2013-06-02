@@ -1,0 +1,16 @@
+################################################################################
+# Haxe Build Script
+# author: Andras Csizmadia <www.vpmedia.eu>      
+# version: 1.0.0
+################################################################################
+
+#######################################
+# Compile FL swc library
+#######################################
+-swf bin/xrope-hx.swc
+-swf-version 11.5
+-cp src
+-lib openfl
+--macro include("xrope")
+--flash-strict
+-debug

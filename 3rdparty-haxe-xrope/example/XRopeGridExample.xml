@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+@author: Andras Csizmadia <www.vpmedia.eu>      
+@version: 1.0.0
+-->
+<project>
+    <meta title="XRopeGridExample" package="hu.vpmedia.haxe.nme" version="1.0.0" company="VPMedia" />    
+    <app main="XRopeGridExample" path="bin" file="XRopeGridExample" />    
+    <window background="#666666" fps="60" />
+    <window width="800" height="600" unless="mobile" />
+    <window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
+    <source path="." />    
+    <classpath name="../src" />  
+    <haxelib name="nme" />
+    <haxelib name="msignal" />        
+    <icon name="images/icon.svg" />    
+    <assets path="images" rename="images" include="*" exclude="icon.svg" /> 
+</project>

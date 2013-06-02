@@ -1,0 +1,21 @@
+-cmd haxelib run openfl build "XRopeAlignExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeFormExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeGridExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeHBoxExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeHFillLineExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeHLineExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeHMultiLineExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeVBoxExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeVFillLineExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeVLineExample.xml" flash
+--next
+-cmd haxelib run openfl build "XRopeVMultiLineExample.xml" flash
