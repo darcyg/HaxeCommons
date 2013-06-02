@@ -23,6 +23,7 @@ before_script:
     - haxelib install munit || true
     - haxelib install hamcrest || true
     - haxelib install box2d || true
+    - haxelib install nape || true
     - haxelib install tilelayer || true
     - haxe -version
     - haxelib run openfl
