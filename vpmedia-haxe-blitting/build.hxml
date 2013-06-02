@@ -10,7 +10,7 @@
 -swf bin/vpmedia-haxe-blitting.swc
 -swf-version 11.5
 -cp src/main/haxe
--cp ../HaxeCore/src/main/haxe/
+-cp ../vpmedia-haxe-framework/src/main/haxe/
 -lib openfl
 --macro include("hu.vpmedia")
 --flash-strict

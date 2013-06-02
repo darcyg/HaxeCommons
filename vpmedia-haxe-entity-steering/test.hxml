@@ -10,8 +10,8 @@
 -main TestMain
 -cp src/main/haxe
 -cp src/test/haxe
--cp ../HaxeCore/src/main/haxe/
--cp ../HaxeECS/src/main/haxe/
+-cp ../vpmedia-haxe-framework/src/main/haxe/
+-cp ../vpmedia-haxe-entity/src/main/haxe/
 -lib munit
 -lib hamcrest
 -lib nme

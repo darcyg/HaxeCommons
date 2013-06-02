@@ -22,13 +22,9 @@ before_script:
     - haxelib install openfl-compatibility || true
     - haxelib install munit || true
     - haxelib install hamcrest || true
-    - haxelib install box2d || true
+    - haxelib install tilelayer || true
     - haxe -version
     - haxelib run openfl
-    - git clone --branch=master git://github.com/vpmedia/HaxeCore.git ../HaxeCore
-    - git clone --branch=master git://github.com/vpmedia/HaxeECS.git ../HaxeECS
-    - haxelib run munit gen
-    - haxe test.hxml
 
 after_script:
     - cd bin

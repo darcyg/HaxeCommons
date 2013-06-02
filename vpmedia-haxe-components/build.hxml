@@ -11,7 +11,7 @@
 -swf bin/vpmedia-haxe-gui.swc
 -swf-version 11.5
 -cp src/main/haxe
--cp ../HaxeCore/src/main/haxe
+-cp ../vpmedia-haxe-framework/src/main/haxe
 -cp ../xrope-hx/src
 -lib openfl
 --macro include("hu.vpmedia")

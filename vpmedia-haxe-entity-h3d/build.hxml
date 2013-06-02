@@ -10,8 +10,8 @@
 -swf bin/vpmedia-haxe-ecs-h3d.swc
 -swf-version 11.5
 -cp src/main/haxe
--cp ../HaxeCore/src/main/haxe/
--cp ../HaxeECS/src/main/haxe/
+-cp ../vpmedia-haxe-framework/src/main/haxe/
+-cp ../vpmedia-haxe-entity/src/main/haxe/
 -lib openfl
 -lib format
 --macro include("hu.vpmedia")
