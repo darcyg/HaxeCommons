@@ -1,0 +1,19 @@
+
+################################################################################
+# Haxe Build Script
+# author: Andras Csizmadia <www.vpmedia.eu>      
+# version: 1.0.0
+################################################################################
+
+#######################################
+# Compile FL swc library
+#######################################
+-swf bin/vpmedia-hx-gui.swc
+-swf-version 11.5
+-cp src/main/haxe
+-cp ../vpmedia-hx-framework/src/main/haxe
+-cp ../3rdparty-hx-xrope/src
+-lib openfl
+--macro include("hu.vpmedia")
+--flash-strict
+-debug

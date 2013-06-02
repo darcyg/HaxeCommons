@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+@author: Andras Csizmadia <www.vpmedia.eu>      
+@version: 1.0.0
+-->
+<project>
+    <meta title="Main" package="hu.vpmedia.haxe.nme" version="1.0.0" company="VPMedia" />    
+    <app main="Main" path="bin" file="Main" />    
+    <window background="#666666" fps="60" />
+    <window width="800" height="600" unless="mobile" />
+    <window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
+    <source path="." />    
+    <classpath name="../src/main/haxe" /> 
+    <classpath name="../../vpmedia-hx-framework/src/main/haxe" />  
+    <classpath name="../../vpmedia-hx-entity/src/main/haxe" />    
+    <haxelib name="openfl" />
+    <haxelib name="nape" />      
+    <icon name="images/icon.svg" />    
+    <assets path="images" rename="images" include="*" exclude="icon.svg" />
+</project>

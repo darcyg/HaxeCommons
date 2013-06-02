@@ -1,0 +1,19 @@
+################################################################################
+# Haxe Build Script
+# author: Andras Csizmadia <www.vpmedia.eu>      
+# version: 1.0.0
+################################################################################
+
+#######################################
+# Compile FL swc library
+#######################################
+-swf bin/vpmedia-hx-ecs-tile.swc
+-swf-version 11.5
+-cp src/main/haxe
+-cp ../vpmedia-hx-framework/src/main/haxe/
+-cp ../vpmedia-hx-entity/src/main/haxe/
+-lib openfl
+-lib tilelayer
+--macro include("hu.vpmedia")
+--flash-strict
+-debug
