@@ -10,13 +10,11 @@
 //=END CLOSED LICENSE
 //
 
-include 'vpmedia-haxe-assets',
+include 'vpmedia-haxe-framework',
+'vpmedia-haxe-assets',
 'vpmedia-haxe-blitting',
 'vpmedia-haxe-components',
 'vpmedia-haxe-entity',
 'vpmedia-haxe-entity-box2d',
-'vpmedia-haxe-entity-h3d',
 'vpmedia-haxe-entity-nape',
-'vpmedia-haxe-entity-steering',
-'vpmedia-haxe-entity-tilelayer',
-'vpmedia-haxe-framework'
+'vpmedia-haxe-entity-steering'
