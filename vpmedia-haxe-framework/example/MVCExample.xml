@@ -11,7 +11,7 @@
     <window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
     <source path="." />    
     <classpath name="../src/main/haxe" />    
-    <haxelib name="nme" />  
+    <haxelib name="openfl" />  
     <!--icon name="src/main/resources/icon.svg" />    
     <assets path="src/main/resources/fonts" rename="fonts" include="*" exclude="" />
     <assets path="src/main/resources/images" rename="images" include="*" exclude="" />

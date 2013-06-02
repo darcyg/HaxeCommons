@@ -11,10 +11,10 @@
     <window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
     <source path="." />    
     <classpath name="../src/main/haxe" /> 
-    <classpath name="../../HaxeCore/src/main/haxe" />  
-    <classpath name="../../HaxeECS/src/main/haxe" />   
+    <classpath name="../../vpmedia-haxe-framework/src/main/haxe" />  
+    <classpath name="../../vpmedia-haxe-entity/src/main/haxe" />   
     <classpath name="../../box2d" />  
-    <haxelib name="nme" />      
+    <haxelib name="openfl" />      
     <icon name="images/icon.svg" />    
     <assets path="images" rename="images" include="*" exclude="icon.svg" /> 
 </project>

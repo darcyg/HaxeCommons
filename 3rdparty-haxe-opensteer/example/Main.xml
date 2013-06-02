@@ -11,7 +11,7 @@
     <window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
     <source path="." />    
     <classpath name="../src" />  
-    <haxelib name="nme" />
+    <haxelib name="openfl" />
     <haxelib name="msignal" />      
     <haxelib name="minject" />    
     <icon name="images/icon.svg" />    

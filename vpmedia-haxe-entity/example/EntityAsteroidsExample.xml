@@ -12,7 +12,7 @@
     <source path="." />    
     <classpath name="../src/main/haxe" />  
     <classpath name="../../HaxeCore/src/main/haxe" />    
-    <haxelib name="nme" />    
+    <haxelib name="openfl" />    
     <icon name="images/icon.svg" />    
     <assets path="images" rename="images" include="*" exclude="icon.svg" />
 </project>

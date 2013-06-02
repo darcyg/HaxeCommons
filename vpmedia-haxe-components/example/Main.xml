@@ -13,7 +13,7 @@
     <classpath name="../src/main/haxe" />  
     <classpath name="../../HaxeCore/src/main/haxe" />  
     <classpath name="../../xrope-hx/src" />  
-    <haxelib name="nme" />
+    <haxelib name="openfl" />
     <haxelib name="msignal" />        
     <icon name="images/icon.svg" />    
     <assets path="images" rename="images" include="*" exclude="icon.svg" /> 

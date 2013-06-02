@@ -37,23 +37,6 @@
     <classpath name="." />      
     <classpath name="../src" />
     
-    <!-- In addition to classpaths, you can use the haxelib node to include code from an installed library off of haxelib.  -->             
-    <haxelib name="nme" /><!--framework--> 
-
-    <!-- You can include precompiled native libraries with your project.  -->
-    <ndll name="std" />
-    <ndll name="regexp" />
-    <ndll name="zlib" />
-    <ndll name="nme" haxelib="nme" />
-
-
-    <!-- The haxedef node will add a define ("-D ") to the command line when running the Haxe compiler. --> 
-    <haxedef name="haxe3" /> 
-    <haxedef name="haxe-boot" /> 
-    <haxedef name="fdb" if="target_flash" /><!--fdb : include the Debugger tag in SWF output and extra debug infos (enable interactive debugging of Flash content)-->  
-    <haxedef name="network-sandbox" if="target_flash" /><!--network-sandbox : use the network sandbox flag for SWF output--> 
-    <!--haxedef name="swf-protected" if="target_flash" /-->
-    
     <!-- The compilerflag node will pass an additional option to the Haxe compiler.  -->
     <compilerflag name="-debug" /> 
     <compilerflag name="--remap flash:nme" />     
