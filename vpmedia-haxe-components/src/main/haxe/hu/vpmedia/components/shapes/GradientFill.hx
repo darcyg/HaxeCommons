@@ -25,7 +25,7 @@ public var type:GradientType;
 public var spreadMethod:SpreadMethod;
 public var interpolationMethod:InterpolationMethod;
 public var focalPtRatio:Float;
-public var gradientColors:Array<UInt>;
+public var gradientColors:Array<Int>;
 public var gradientAlphas:Array<Float>;
 public var gradientRatios:Array<UInt>;
 

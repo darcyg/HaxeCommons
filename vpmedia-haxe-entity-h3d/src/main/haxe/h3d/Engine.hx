@@ -15,12 +15,14 @@ class Engine {
 
 	public var drawTriangles(default, null) : Int;
 	public var drawCalls(default, null) : Int;
+	public var shaderSwitches(default, null) : Int;
 
 	public var backgroundColor : Int;
 	public var autoResize : Bool;
 	public var fullScreen(default, set) : Bool;
 	
 	public var fps(get, never) : Float;
+	public var frameCount : Int = 0;
 	
 	public var forcedMatBits : Int = 0;
 	public var forcedMatMask : Int = 0xFFFFFF;
@@ -34,6 +36,7 @@ class Engine {
 	var curMultiBuffer : Array<h3d.impl.Buffer.BufferOffset>;
 	var curAttributes : Int;
 	var curTextures : Array<h3d.mat.Texture>;
+	var curSamplerBits : Array<Int>;
 	var antiAlias : Int;
 	var inTarget : Bool;
 
@@ -103,10 +106,12 @@ class Engine {
 			var fdata = s.fragmentBytes.getData();
 			vdata.endian = flash.utils.Endian.LITTLE_ENDIAN;
 			fdata.endian = flash.utils.Endian.LITTLE_ENDIAN;
-			s.program.upload(vdata,fdata);
+			s.program.upload(vdata, fdata);
+			curShader = null; // in case we had the same shader and it was disposed
 		}
 		if( s != curShader ) {
 			ctx.setProgram(s.program);
+			shaderSwitches++;
 			s.varsChanged = true;
 			// unbind extra textures
 			var tcount : Int = s.textures.length;
@@ -125,11 +130,22 @@ class Engine {
 			ctx.setProgramConstantsFromVector(flash.display3D.Context3DProgramType.FRAGMENT, 0, s.fragmentVars.toData());
 			for( i in 0...s.textures.length ) {
 				var t = s.textures[i];
-				if( t == null )
-					throw "Texture #" + i + " not bound in shader " + shader;
-				if( t != curTextures[i] ) {
-					ctx.setTextureAt(i, t.isDisposed() ? h2d.Tile.fromColor(0xFFFF00FF).getTexture().t : t.t);
+				if( t == null || t.isDisposed() )
+					t = h2d.Tile.fromColor(0xFFFF00FF).getTexture();
+				var cur = curTextures[i];
+				if( t != cur ) {
+					ctx.setTextureAt(i, t.t);
 					curTextures[i] = t;
+				}
+				// if we have set one of the texture flag manually or if the shader does not configure the texture flags
+				if( !t.hasDefaultFlags() || !s.texHasConfig[s.textureMap[i]] ) {
+					if( cur == null || t.bits != curSamplerBits[i] ) {
+						ctx.setSamplerStateAt(i, WRAP[t.wrap.getIndex()], FILTER[t.filter.getIndex()], MIP[t.mipMap.getIndex()]);
+						curSamplerBits[i] = t.bits;
+					}
+				} else {
+					// the texture flags has been set by the shader, so we are in an unkown state
+					curSamplerBits[i] = -1;
 				}
 			}
 		}
@@ -237,9 +253,9 @@ class Engine {
 		}
 	}
 	
-	public function renderMultiBuffers( buffers : Array<h3d.impl.Buffer.BufferOffset>, indexes : h3d.impl.Indexes ) {
-		var triCount = Std.int(indexes.count / 3);
-		if( triCount <= 0 ) return;
+	public function renderMultiBuffers( buffers : Array<h3d.impl.Buffer.BufferOffset>, indexes : h3d.impl.Indexes, startTri = 0, drawTri = -1 ) {
+		var maxTri = Std.int(indexes.count / 3);
+		if( maxTri <= 0 ) return;
 		
 		// select the multiple buffers elements
 		var changed = curMultiBuffer == null || curMultiBuffer.length != buffers.length;
@@ -273,11 +289,14 @@ class Engine {
 		
 		if( indexes.isDisposed() )
 			return;
-			
-		// render
-		ctx.drawTriangles(indexes.ibuf, 0, triCount);
-		drawTriangles += triCount;
-		drawCalls++;
+		
+		if( drawTri < 0 ) drawTri = maxTri - startTri;
+		if( drawTri > 0 ) {
+			// render
+			ctx.drawTriangles(indexes.ibuf, startTri * 3, drawTri);
+			drawTriangles += drawTri;
+			drawCalls++;
+		}
 	}
 
 	function set_debug(d) {
@@ -374,7 +393,9 @@ class Engine {
 			return false;
 		ctx.clear( ((backgroundColor>>16)&0xFF)/255 , ((backgroundColor>>8)&0xFF)/255, (backgroundColor&0xFF)/255, ((backgroundColor>>>24)&0xFF)/255);
 		// init
+		frameCount++;
 		drawTriangles = 0;
+		shaderSwitches = 0;
 		drawCalls = 0;
 		curMatBits = -1;
 		curShader = null;
@@ -382,6 +403,7 @@ class Engine {
 		curMultiBuffer = null;
 		curProjMatrix = null;
 		curTextures = [];
+		curSamplerBits = [];
 		return true;
 	}
 
@@ -390,7 +412,6 @@ class Engine {
 		curShader = null;
 		curBuffer = null;
 		curMultiBuffer = null;
-		curProjMatrix = null;
 		for( i in 0...curAttributes )
 			ctx.setVertexBufferAt(i, null);
 		curAttributes = 0;
@@ -402,6 +423,7 @@ class Engine {
 	public function end() {
 		ctx.present();
 		reset();
+		curProjMatrix = null;
 	}
 
 	public function setTarget( tex : h3d.mat.Texture, useDepth = false, clearColor = 0 ) {
@@ -528,4 +550,21 @@ class Engine {
 		flash.display3D.Context3DVertexBufferFormat.FLOAT_3,
 		flash.display3D.Context3DVertexBufferFormat.FLOAT_4,
 	];
+	
+	static var WRAP = [
+		flash.display3D.Context3DWrapMode.CLAMP,
+		flash.display3D.Context3DWrapMode.REPEAT,
+	];
+	
+	static var FILTER = [
+		flash.display3D.Context3DTextureFilter.NEAREST,
+		flash.display3D.Context3DTextureFilter.LINEAR,
+	];
+	
+	static var MIP = [
+		flash.display3D.Context3DMipFilter.MIPNONE,
+		flash.display3D.Context3DMipFilter.MIPNEAREST,
+		flash.display3D.Context3DMipFilter.MIPLINEAR,
+	];
+	
 }

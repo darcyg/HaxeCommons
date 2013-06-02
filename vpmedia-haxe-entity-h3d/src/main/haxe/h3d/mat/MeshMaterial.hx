@@ -2,8 +2,8 @@ package h3d.mat;
 
 typedef LightSystem = {
 	var ambient : h3d.Vector;
-	var dirs : Array<{ pos : h3d.Vector, color : h3d.Vector }>;
-	var points : Array<{ pos : h3d.Vector, color : h3d.Vector }>;
+	var dirs : Array<{ dir : h3d.Vector, color : h3d.Vector }>;
+	var points : Array<{ pos : h3d.Vector, color : h3d.Vector, att : h3d.Vector }>;
 }
 
 typedef ShadowMap = {
@@ -35,8 +35,7 @@ private class MeshShader extends hxsl.Shader {
 		var hasSkin : Bool;
 		var hasVertexColor : Bool;
 		var hasVertexColorAdd : Bool;
-		var texWrap : Bool;
-		var skinMatrixes : M34<35>;
+		var skinMatrixes : M34<34>;
 
 		var tcolor : Float3;
 		var acolor : Float3;
@@ -48,10 +47,10 @@ private class MeshShader extends hxsl.Shader {
 		var alphaMap : Texture;
 		var hasAlphaMap : Bool;
 		
-		var lightSystem : Param<{
+		var lightSystem : Param < {
 			var ambient : Float3;
-			var dirs : Array<{ pos : Float3, color : Float3 }>;
-			var points : Array<{ pos : Float3, color : Float4 }>;
+			var dirs : Array<{ dir : Float3, color : Float3 }>;
+			var points : Array<{ pos : Float3, color : Float3, att : Float3 }>;
 		}>;
 		
 		var fog : Float4;
@@ -71,6 +70,8 @@ private class MeshShader extends hxsl.Shader {
 		var shadowTexture : Texture;
 		var tshadowPos : Float4;
 		
+		var mposInv : Matrix;
+		
 		function vertex( mpos : Matrix, mproj : Matrix ) {
 			var tpos = input.pos.xyzw;
 			if( hasSkin )
@@ -85,30 +86,31 @@ private class MeshShader extends hxsl.Shader {
 			if( uvDelta != null ) t += uvDelta;
 			tuv = t;
 			if( lightSystem != null ) {
+				// calculate normal
+				var n = input.normal;
+				if( mpos != null ) n *= mpos;
+				if( hasSkin ) {
+					n = n * input.weights.x * skinMatrixes[input.indexes.x * (255 * 3)] + n * input.weights.y * skinMatrixes[input.indexes.y * (255 * 3)] + n * input.weights.z * skinMatrixes[input.indexes.z * (255 * 3)];
+					if( mpos != null ) n = n * mposInv;
+				}
 				var col = lightSystem.ambient;
-				var n = if( mpos != null ) input.normal * mpos else input.normal;
 				n = n.normalize();
 				for( d in lightSystem.dirs )
-					col += d.pos.dot(n).max(0) * d.color;
+					col += d.color * n.dot(-d.dir).max(0);
+				for( p in lightSystem.points ) {
+					var d = tpos.xyz - p.pos;
+					var dist2 = d.dot(d);
+					var dist = dist2.sqt();
+					col += p.color * (n.dot(d).max(0) / (p.att.x * dist + p.att.y * dist2 + p.att.z * dist2 * dist));
+				}
 				if( hasVertexColor )
 					tcolor = col * input.color;
 				else
 					tcolor = col;
-				var acol = [0, 0, 0];
-				for( p in lightSystem.points ) {
-					var dist = tpos.xyz - p.pos;
-					acol += p.color.rgb * (dist.dot(dist) + p.color.a).inv();
-				}
-				if( hasVertexColorAdd )
-					acolor = acol + input.colorAdd;
-				else
-					acolor = acol;
-			} else {
-				if( hasVertexColor )
-					tcolor = input.color;
-				if( hasVertexColorAdd )
-					acolor = input.colorAdd;
-			}
+			} else if( hasVertexColor )
+				tcolor = input.color;
+			if( hasVertexColorAdd )
+				acolor = input.colorAdd;
 			if( fog != null ) {
 				var dist = tpos.xyz - fog.xyz;
 				talpha = (fog.w * dist.dot(dist).rsqrt()).min(1);
@@ -120,32 +122,28 @@ private class MeshShader extends hxsl.Shader {
 		
 		var killAlpha : Bool;
 		var killAlphaThreshold : Float;
-		var texNearest : Bool;
+		var isDXT1 : Bool;
+		var isDXT5 : Bool;
 		
 		function fragment( tex : Texture, colorAdd : Float4, colorMul : Float4, colorMatrix : M44 ) {
-			var c = tex.get(tuv.xy, filter = !texNearest, wrap = (texWrap || uvDelta != null));
+			var c = tex.get(tuv.xy,type=isDXT1 ? 1 : isDXT5 ? 2 : 0);
 			if( fog != null ) c.a *= talpha;
-			if( hasAlphaMap ) c.a *= alphaMap.get(tuv.xy,filter = !texNearest).b;
+			if( hasAlphaMap ) c.a *= alphaMap.get(tuv.xy,type=isDXT1 ? 1 : isDXT5 ? 2 : 0).b;
 			if( killAlpha ) kill(c.a - killAlphaThreshold);
-			if( hasBlend ) c.rgb = c.rgb * (1 - tblend) + tblend * blendTexture.get(tuv.xy, filter = !texNearest, wrap).rgb;
+			if( hasBlend ) c.rgb = c.rgb * (1 - tblend) + tblend * blendTexture.get(tuv.xy,type=isDXT1 ? 1 : isDXT5 ? 2 : 0).rgb;
 			if( colorAdd != null ) c += colorAdd;
 			if( colorMul != null ) c = c * colorMul;
 			if( colorMatrix != null ) c = c * colorMatrix;
-			if( lightSystem != null ) {
-				c.rgb *= tcolor;
+			if( hasVertexColorAdd )
 				c.rgb += acolor;
-			} else {
-				if( hasVertexColor )
-					c.rgb *= tcolor;
-				if( hasVertexColorAdd )
-					c.rgb += acolor;
-			}
+			if( lightSystem != null || hasVertexColor )
+				c.rgb *= tcolor;
 			if( hasShadowMap ) {
 				// ESM filtering
 				var shadow = exp( shadowColor.w * (tshadowPos.z - shadowTexture.get(tshadowPos.xy).dot([1, 1 / 255, 1 / (255 * 255), 1 / (255 * 255 * 255)]))).sat();
 				c.rgb *= (1 - shadow) * shadowColor.rgb + shadow.xxx;
 			}
-			if( hasGlow ) c.rgb += glowTexture.get(tuv.xy, filter = !texNearest, wrap = (texWrap || uvDelta != null)).rgb * glowAmount;
+			if( hasGlow ) c.rgb += glowTexture.get(tuv.xy).rgb * glowAmount;
 			out = c;
 		}
 		
@@ -166,8 +164,6 @@ class MeshMaterial extends Material {
 	public var uvDelta(get,set) : Null<h3d.Vector>;
 
 	public var killAlpha(get,set) : Bool;
-	public var texNearest(get, set) : Bool;
-	public var texWrap(get, set) : Bool;
 
 	public var hasVertexColor(get, set) : Bool;
 	public var hasVertexColorAdd(get,set) : Bool;
@@ -208,8 +204,6 @@ class MeshMaterial extends Material {
 		m.uvScale = uvScale;
 		m.uvDelta = uvDelta;
 		m.killAlpha = killAlpha;
-		m.texNearest = texNearest;
-		m.texWrap = texWrap;
 		m.hasVertexColor = hasVertexColor;
 		m.hasVertexColorAdd = hasVertexColorAdd;
 		m.colorAdd = colorAdd;
@@ -221,13 +215,33 @@ class MeshMaterial extends Material {
 		m.alphaMap = alphaMap;
 		m.fog = fog;
 		m.zBias = zBias;
+		m.blendTexture = blendTexture;
+		m.killAlphaThreshold = killAlphaThreshold;
 		return m;
 	}
 	
 	function setup( camera : h3d.Camera, mpos ) {
 		mshader.mpos = useMatrixPos ? mpos : null;
 		mshader.mproj = camera.m;
+		if( mshader.hasSkin && useMatrixPos && mshader.lightSystem != null ) {
+			var tmp = new h3d.Matrix();
+			tmp.inverse(mpos);
+			mshader.mposInv = tmp;
+		}
 		mshader.tex = texture;
+	}
+	
+	/**
+		Set the DXT compression access mode for all textures of this material.
+	**/
+	public function setDXTSupport( enable : Bool, alpha = false ) {
+		if( !enable ) {
+			mshader.isDXT1 = false;
+			mshader.isDXT5 = false;
+		} else {
+			mshader.isDXT1 = !alpha;
+			mshader.isDXT5 = alpha;
+		}
 	}
 	
 	inline function get_uvScale() {
@@ -254,22 +268,6 @@ class MeshMaterial extends Material {
 		return mshader.killAlpha = v;
 	}
 
-	inline function get_texNearest() {
-		return mshader.texNearest;
-	}
-
-	inline function set_texNearest(v) {
-		return mshader.texNearest = v;
-	}
-
-	inline function get_texWrap() {
-		return mshader.texWrap;
-	}
-
-	inline function set_texWrap(v) {
-		return mshader.texWrap = v;
-	}
-	
 	inline function get_colorAdd() {
 		return mshader.colorAdd;
 	}
@@ -328,7 +326,7 @@ class MeshMaterial extends Material {
 		return mshader.skinMatrixes = v;
 	}
 	
-	inline function get_lightSystem() {
+	inline function get_lightSystem() : LightSystem {
 		return mshader.lightSystem;
 	}
 

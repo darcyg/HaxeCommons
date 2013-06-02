@@ -224,8 +224,8 @@ class MemoryManager {
 		#end
 	}
 	
-	function newTexture(t, w, h, cubic, target, allocPos) {
-		var t = new h3d.mat.Texture(this, t, w, h, cubic, target);
+	function newTexture(t, w, h, cubic, target, mm, allocPos) {
+		var t = new h3d.mat.Texture(this, t, w, h, cubic, target, mm);
 		tdict.set(t, t.t);
 		textures.push(t.t);
 		#if debug
@@ -263,33 +263,78 @@ class MemoryManager {
 		tdict.set(t, t.t);
 		textures.push(t.t);
 	}
-
 	
-	public function allocTexture( width : Int, height : Int, ?allocPos : AllocPos ) {
+	public function readAtfHeader( data : haxe.io.Bytes ) {
+		var cubic = (data.get(6) & 0x80) != 0;
+		var alpha = false, compress = false;
+		switch( data.get(6) & 0x7F ) {
+		case 0:
+		case 1: alpha = true;
+		case 2: compress = true;
+		case 3, 4: alpha = true; compress = true;
+		case f: throw "Invalid ATF format " + f;
+		}
+		var width = 1 << data.get(7);
+		var height = 1 << data.get(8);
+		var mips = data.get(9) - 1;
+		return {
+			width : width,
+			height : height,
+			cubic : cubic,
+			alpha : alpha,
+			compress : compress,
+			mips : mips,
+		};
+	}
+
+	public function allocAtfTexture( width : Int, height : Int, mipLevels : Int = 0, alpha : Bool = false, compress : Bool = false, cubic : Bool = false, ?allocPos : AllocPos ) {
 		freeTextures();
-		return newTexture(ctx.createTexture(width, height, flash.display3D.Context3DTextureFormat.BGRA, false), width, height, false, false, allocPos);
+		var fmt = compress ? (alpha ? flash.display3D.Context3DTextureFormat.COMPRESSED_ALPHA : flash.display3D.Context3DTextureFormat.COMPRESSED) : flash.display3D.Context3DTextureFormat.BGRA;
+		var t = if( cubic )
+			ctx.createCubeTexture(width, fmt, false, mipLevels)
+		else
+			ctx.createTexture(width, height, fmt, false, mipLevels);
+		var t = newTexture(t, width, height, cubic, false, mipLevels, allocPos);
+		t.atfProps = { alpha : alpha, compress : compress };
+		return t;
+	}
+	
+	public function allocTexture( width : Int, height : Int, mipMap = false, ?allocPos : AllocPos ) {
+		freeTextures();
+		var levels = 0;
+		if( mipMap ) {
+			while( width > (1 << levels) && height > (1 << levels) )
+				levels++;
+		}
+		return newTexture(ctx.createTexture(width, height, flash.display3D.Context3DTextureFormat.BGRA, false, levels), width, height, false, false, levels, allocPos);
 	}
 	
 	public function allocTargetTexture( width : Int, height : Int, ?allocPos : AllocPos ) {
 		freeTextures();
-		return newTexture(ctx.createTexture(width, height, flash.display3D.Context3DTextureFormat.BGRA, true), width, height, false, true, allocPos);
+		return newTexture(ctx.createTexture(width, height, flash.display3D.Context3DTextureFormat.BGRA, true, 0), width, height, false, true, 0, allocPos);
 	}
 
-	public function makeTexture( ?bmp : flash.display.BitmapData, ?mbmp : h3d.mat.Bitmap, ?allocPos : AllocPos ) {
+	public function makeTexture( ?bmp : flash.display.BitmapData, ?mbmp : h3d.mat.Bitmap, hasMipMap = false, ?allocPos : AllocPos ) {
 		var t;
 		if( bmp != null ) {
-			t = allocTexture(bmp.width, bmp.height, allocPos);
-			t.upload(bmp);
+			t = allocTexture(bmp.width, bmp.height, hasMipMap, allocPos);
+			if( hasMipMap ) t.uploadMipMap(bmp) else t.upload(bmp);
 		} else {
-			t = allocTexture(mbmp.width, mbmp.height, allocPos);
+			if( hasMipMap ) throw "No support for mipmap + bytes";
+			t = allocTexture(mbmp.width, mbmp.height, hasMipMap, allocPos);
 			t.uploadBytes(mbmp.bytes);
 		}
 		return t;
 	}
 
-	public function allocCubeTexture( size : Int, ?allocPos : AllocPos ) {
+	public function allocCubeTexture( size : Int, mipMap = false, ?allocPos : AllocPos ) {
 		freeTextures();
-		return newTexture(ctx.createCubeTexture(size, flash.display3D.Context3DTextureFormat.BGRA, false), size, size, true, false, allocPos);
+		var levels = 0;
+		if( mipMap ) {
+			while( size > (1 << levels) )
+				levels++;
+		}
+		return newTexture(ctx.createCubeTexture(size, flash.display3D.Context3DTextureFormat.BGRA, false, levels), size, size, true, false, levels, allocPos);
 	}
 
 	public function allocIndex( indices : flash.Vector<UInt> ) {
@@ -374,7 +419,7 @@ class MemoryManager {
 						break;
 					} else {
 						// we can't alloc into a smaller buffer because we might use preallocated indexes
-						if( b.size < allocSize ) {
+						if( b.size != allocSize ) {
 							free = null;
 							break;
 						}
@@ -407,7 +452,7 @@ class MemoryManager {
 				while( b != null ) {
 					free = b.free;
 					// skip not aligned buffers
-					if( b.size < allocSize )
+					if( b.size != allocSize )
 						free = null;
 					while( free != null ) {
 						if( free.count >= size ) {
@@ -436,7 +481,7 @@ class MemoryManager {
 			var size;
 			if( align == 0 ) {
 				size = nvect;
-				if( size > allocSize ) throw "Too many vertex to allocate "+size;
+				if( size > 0xFFFF ) throw "Too many vertex to allocate "+size;
 			} else
 				size = allocSize; // group allocations together to minimize buffer count
 			var mem = size * stride * 4;
@@ -499,19 +544,26 @@ class MemoryManager {
 		ctx = newContext;
 		indexes.dispose();
 		quadIndexes.dispose();
-		for( t in tdict.keys() )
+		var tkeys = Lambda.array({ iterator : tdict.keys });
+		for( t in tkeys ) {
+			if( !tdict.exists(t) )
+				continue;
 			if( t.onContextLost == null )
 				t.dispose();
 			else {
 				textures.remove(t.t);
+				var fmt = flash.display3D.Context3DTextureFormat.BGRA;
+				if( t.atfProps != null )
+					fmt = t.atfProps.compress ? (t.atfProps.alpha ? flash.display3D.Context3DTextureFormat.COMPRESSED_ALPHA : flash.display3D.Context3DTextureFormat.COMPRESSED) : flash.display3D.Context3DTextureFormat.BGRA;
 				if( t.isCubic )
-					t.t = ctx.createCubeTexture(t.width, flash.display3D.Context3DTextureFormat.BGRA, t.isTarget);
+					t.t = ctx.createCubeTexture(t.width, fmt, t.isTarget, t.mipLevels);
 				else
-					t.t = ctx.createTexture(t.width, t.height, flash.display3D.Context3DTextureFormat.BGRA, t.isTarget);
+					t.t = ctx.createTexture(t.width, t.height, fmt, t.isTarget, t.mipLevels);
 				tdict.set(t, t.t);
 				textures.push(t.t);
 				t.onContextLost();
 			}
+		}
 		for( b in buffers ) {
 			var b = b;
 			while( b != null ) {

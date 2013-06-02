@@ -25,7 +25,7 @@ class Ray {
 		return "{[" + FMath.fmt(px) + "," + FMath.fmt(py) + "," + FMath.fmt(pz) + "],[" + FMath.fmt(lx) + "," + FMath.fmt(ly) + "," + FMath.fmt(lz) + "]}";
 	}
 	
-	public inline function intersect( p : Plan ) : Vector {
+	public inline function intersect( p : Plane ) : Vector {
 		var d = lx * p.nx + ly * p.ny + lz * p.nz;
 		var nd = p.d - (px * p.nx + py * p.ny + pz * p.nz);
 		// line parallel with plane
@@ -34,6 +34,30 @@ class Ray {
 		else {
 			var k = nd / d;
 			return new Vector(px + lx * k, py + ly * k, pz + lz * k);
+		}
+	}
+
+	public inline function collide( b : Bounds ) : Bool {
+		var dx = 1 / lx;
+		var dy = 1 / ly;
+		var dz = 1 / lz;
+		var t1 = (b.xMin - px) * dx;
+		var t2 = (b.xMax - px) * dx;
+		var t3 = (b.yMin - py) * dy;
+		var t4 = (b.yMax - py) * dy;
+		var t5 = (b.zMin - pz) * dz;
+		var t6 = (b.zMax - pz) * dz;
+		var tmin = FMath.max(FMath.max(FMath.min(t1, t2), FMath.min(t3, t4)), FMath.min(t5, t6));
+		var tmax = FMath.min(FMath.min(FMath.max(t1, t2), FMath.max(t3, t4)), FMath.max(t5, t6));
+		if( tmax < 0 ) {
+			// t = tmax;
+			return false;
+		} else if( tmin > tmax ) {
+			// t = tmax;
+			return false;
+		} else {
+			// t = tmin;
+			return true;
 		}
 	}
 	

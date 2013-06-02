@@ -61,13 +61,15 @@ class RuntimeCompiler {
 	var cur : Code;
 	var defPos : Position;
 
+	public static var DEFAULT_CONFIG = {
+		padWrites : true,
+	};
+	
 	public var config : { padWrites : Bool };
 	
 	public function new() {
 		varId = 0;
-		config = {
-			padWrites : true,
-		};
+		config = DEFAULT_CONFIG;
 	}
 	
 	function error( msg : String, pos : Position ) : Dynamic {
@@ -786,11 +788,22 @@ class RuntimeCompiler {
 						}
 					case PSingle:
 						if( isTrue(c) ) flags.push(TSingle);
+					case PIgnoreSampler:
+						if( isTrue(c) ) flags.push(TIgnoreSampler);
+					case PType:
+						var idx = switch( c ) {
+						case CNull: 0;
+						case CInt(i): i;
+						case CFloat(f): Std.int(f);
+						default: throw "assert";
+						}
+						if( idx > 0 )
+							flags.push([TTypeDxt1, TTypeDxt5][idx - 1]);
 					}
 				}
 			var mode = [];
 			for( f in flags )
-				mode.push({ f : CTFlag(f), p : e.p });
+				mode.push( { f : CTFlag(f), p : e.p } );
 			CTex(v, acc, mode);
 		case CCond(c, eif, eelse):
 			if( isTrue(compileCond(c)) )

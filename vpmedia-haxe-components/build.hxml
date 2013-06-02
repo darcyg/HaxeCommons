@@ -12,7 +12,7 @@
 -swf-version 11.5
 -cp src/main/haxe
 -cp ../vpmedia-haxe-framework/src/main/haxe
--cp ../xrope-hx/src
+-cp ../3rdparty-haxe-xrope/src
 -lib openfl
 --macro include("hu.vpmedia")
 --flash-strict

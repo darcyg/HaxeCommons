@@ -83,6 +83,7 @@ class Compiler {
 					{ p1 : TFloat4, p2 : mat34_t, r : TFloat3 },
 					{ p1 : TFloat3, p2 : mat3_t, r : TFloat3 },
 					{ p1 : TFloat3, p2 : mat4_t, r : TFloat3 }, // only use the 3x4 part of the matrix
+					{ p1 : TFloat3, p2 : mat34_t, r : TFloat3 },
 					{ p1 : mat4, p2 : mat4_t, r : mat4 },
 					{ p1 : mat3, p2 : mat3_t, r : mat3 },
 					{ p1 : mat4_t, p2 : mat4, r : mat4_t },
@@ -548,6 +549,8 @@ class Compiler {
 					case TWrap, TClamp: PWrap;
 					case TFilterLinear, TFilterNearest: PFilter;
 					case TSingle: single = true; PSingle;
+					case TTypeRgba, TTypeDxt1, TTypeDxt5: PType;
+					case TIgnoreSampler: PIgnoreSampler;
 					case TLodBias(_): PLodBias;
 					}
 					tflags.push( { f : CTFlag(fl), p : f.p } );
@@ -555,8 +558,8 @@ class Compiler {
 					var v = compileValue(v, false, true);
 					param = p;
 					var t = switch( p ) {
-					case PLodBias: TFloat;
-					case PMipMap, PSingle, PWrap, PFilter: TBool;
+					case PLodBias, PType: TFloat;
+					case PMipMap, PSingle, PWrap, PFilter, PIgnoreSampler: TBool;
 					}
 					unify(v.t, t, v.p);
 					tflags.push( { f : CTParam(p, v), p : f.p } );
