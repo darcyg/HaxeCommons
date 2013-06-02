@@ -26,7 +26,7 @@
 //
 //=END MIT LICENSE
 ////////////////////////////////////////////////////////////////////////////////
-package hu.vpmedia.stm.fsm;
+package hu.vpmedia.statemachines.fsm;
 
 import massive.munit.util.Timer;
 import massive.munit.Assert;

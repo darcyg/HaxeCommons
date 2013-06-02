@@ -20,9 +20,9 @@ import flash.geom.Matrix;
 import flash.events.Event;
 import hu.vpmedia.framework.BaseDisplayObject;
 import hu.vpmedia.framework.IBaseTransmitter;
-import hu.vpmedia.stm.hfsm.State;
-import hu.vpmedia.stm.hfsm.StateMachine;
-import hu.vpmedia.stm.hfsm.IState;
+import hu.vpmedia.statemachines.hfsm.State;
+import hu.vpmedia.statemachines.hfsm.StateMachine;
+import hu.vpmedia.statemachines.hfsm.IState;
 import hu.vpmedia.signals.SignalLite;
 
 /*

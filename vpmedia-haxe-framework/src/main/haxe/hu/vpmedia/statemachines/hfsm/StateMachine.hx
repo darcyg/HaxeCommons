@@ -26,7 +26,7 @@
 //
 //=END MIT LICENSE
 ////////////////////////////////////////////////////////////////////////////////
-package hu.vpmedia.stm.hfsm;
+package hu.vpmedia.statemachines.hfsm;
 
 import hu.vpmedia.signals.SignalLite;
 

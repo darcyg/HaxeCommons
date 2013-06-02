@@ -26,15 +26,27 @@
 //
 //=END MIT LICENSE
 ////////////////////////////////////////////////////////////////////////////////
-package hu.vpmedia.stm.fsm;
+package hu.vpmedia.statemachines.fsm;
 
 /**
- * State interface
+ * State 
  */
-interface IState
+class State implements IState
 {
-    var name:String;         
+    public var name:String;
     
-    function enter():Void;
-    function exit():Void; 
+    public function new(name:String)
+    {
+        this.name = name;        
+    }  
+    
+    public function enter():Void
+    { 
+        // abstract template
+    }
+    
+    public function exit():Void
+    { 
+        // abstract template        
+    }
 }

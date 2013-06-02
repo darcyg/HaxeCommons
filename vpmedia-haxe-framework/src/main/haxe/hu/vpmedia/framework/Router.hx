@@ -28,8 +28,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package hu.vpmedia.framework;
 
-import hu.vpmedia.stm.hfsm.State;
-import hu.vpmedia.stm.hfsm.StateMachine;
+import hu.vpmedia.statemachines.hfsm.State;
+import hu.vpmedia.statemachines.hfsm.StateMachine;
 import hu.vpmedia.framework.IBaseTransmitter;
 import hu.vpmedia.framework.BaseTransmitter;
 import hu.vpmedia.framework.IBaseView;
