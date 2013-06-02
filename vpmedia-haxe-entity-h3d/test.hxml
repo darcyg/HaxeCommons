@@ -1,0 +1,21 @@
+################################################################################
+# Haxe Test Build Script
+# author: Andras Csizmadia <www.vpmedia.eu>      
+# version: 1.0.0
+################################################################################
+
+#######################################
+# Compile FL tests
+#######################################
+-main TestMain
+-cp src/main/haxe
+-cp src/test/haxe
+-cp ../HaxeCore/src/main/haxe/
+-cp ../HaxeECS/src/main/haxe/
+-lib munit
+-lib hamcrest
+-lib nme
+-lib format
+-swf-version 11.5
+-swf build/as3_test.swf
+-debug

@@ -1,0 +1,59 @@
+////////////////////////////////////////////////////////////////////////////////
+//=BEGIN CLOSED LICENSE
+//
+// Copyright(c) 2012 Andras Csizmadia.
+// http://www.vpmedia.eu
+//
+// For information about the licensing and copyright please 
+// contact Andras Csizmadia at andras@vpmedia.eu.
+//
+//=END CLOSED LICENSE
+////////////////////////////////////////////////////////////////////////////////
+package hu.vpmedia.entity;
+
+import nape.space.Space;
+import nape.geom.Vec2;
+import nape.constraint.PivotJoint;
+import nape.constraint.Constraint;
+
+import flash.Lib;
+
+class NapeDragDropSystem extends BaseEntitySystem
+{
+    public var physics:Space;
+    public var hand:PivotJoint;
+        
+    public static var RAD_TO_DEG:Float=180 / Math.PI; //57.29577951;
+    public static var DEG_TO_RAD:Float=Math.PI / 180; //0.017453293;
+        
+    public function new(priority:Int, world:BaseEntityWorld) 
+    {
+        super(priority, world);
+        
+        physics = NapeDef.space;
+        
+        hand = new PivotJoint(physics.world,physics.world,new Vec2(),new Vec2());
+        hand.stiff = false;
+        hand.space = physics;
+        hand.active = false;
+
+        Lib.current.addEventListener(flash.events.MouseEvent.MOUSE_DOWN, function(_) {
+            var mp = new Vec2(Lib.current.mouseX,Lib.current.mouseY);
+            for(b in physics.bodiesUnderPoint(mp)) {
+                if(!b.isDynamic()) continue;
+                hand.body2 = b;
+                hand.anchor2 = b.worldToLocal(mp);
+                hand.active = true;
+            }
+        });
+        Lib.current.addEventListener(flash.events.MouseEvent.MOUSE_UP, function(_) {
+            hand.active = false;
+        });    
+    }    
+    
+    override function step(timeDelta:Float) 
+    {
+        hand.anchor1.setxy(Lib.current.mouseX,Lib.current.mouseY);
+    }
+    
+}

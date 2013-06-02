@@ -1,0 +1,19 @@
+#################
+## Excludes
+#################
+
+# Directories
+doc/
+build/
+bin/
+bin-debug/
+target/
+publish/
+.gradle/
+.idea/
+
+# Auto-generated Files
+TestMain.hx
+TestSuite.hx
+ExampleTest.hx
+.build

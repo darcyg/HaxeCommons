@@ -1,0 +1,39 @@
+////////////////////////////////////////////////////////////////////////////////
+//=BEGIN CLOSED LICENSE
+//
+// Copyright(c) 2012-2013 Andras Csizmadia.
+// http://www.vpmedia.eu
+//
+// For information about the licensing and copyright please 
+// contact Andras Csizmadia at andras@vpmedia.eu.
+//
+//=END CLOSED LICENSE
+////////////////////////////////////////////////////////////////////////////////
+package hu.vpmedia.components.shapes;
+
+import flash.display.Graphics;
+import flash.display.DisplayObjectContainer;
+import flash.Vector;
+
+class TrianglesShape extends BaseShape
+{
+    public var data:Dynamic;
+    public var vertices:Dynamic;
+    public var indices:Dynamic;
+    public var uvtData:Dynamic;
+    
+    //--------------------------------------
+    //  Constructor
+    //--------------------------------------
+    public function new(parent:DisplayObjectContainer,x:Int,y:Int,data:Vector<Dynamic>,?fill:IBaseGraphicsTexture=null,?stroke:IBaseGraphicsTexture=null, ?drawAfter:Bool=true)
+    {        
+        type = EShapeType.TRIANGLES;
+        this.data = data;
+        super(parent, x, y, 1, 1, fill, stroke, drawAfter);
+    }
+    
+    override function drawGeometry():Void
+    {
+        canvas.graphics.drawTriangles(vertices, indices, uvtData, culling);    
+    }
+}

@@ -1,0 +1,143 @@
+////////////////////////////////////////////////////////////////////////////////
+//=BEGIN CLOSED LICENSE
+//
+// Copyright(c) 2012 Andras Csizmadia.
+// http://www.vpmedia.eu
+//
+// For information about the licensing and copyright please 
+// contact Andras Csizmadia at andras@vpmedia.eu.
+//
+//=END CLOSED LICENSE
+////////////////////////////////////////////////////////////////////////////////
+package app;
+
+import flash.display.Sprite;
+import flash.events.KeyboardEvent;
+import flash.ui.Keyboard;
+import flash.display.Sprite;
+import flash.events.Event;
+
+import flash.Lib;
+
+#if debug
+import com.furusystems.slf4hx.Logging;
+import com.furusystems.slf4hx.loggers.Logger;	    
+#end  
+
+/**
+ * @author Andras Csizmadia
+ * @version 1.0
+ */
+
+class TestBed extends Sprite
+{
+	public var test:Sprite;
+	public var testContainer:Sprite;
+	public var testCounter:Int;
+	public var testLength:Int;
+	
+	#if debug
+	static var L:Logger = Logging.getLogger(TestBed); 
+	#end 
+	
+	public function new()
+	{
+		super();			
+		//testCases.push(PhysicsMotorTest);
+		if(stage == null)
+		{
+			addEventListener(Event.ADDED_TO_STAGE,onAddedHandler,false,0,true);
+		} else {
+			initialize();
+		}
+	}
+	
+	function onAddedHandler(event:Event):Void
+	{
+		removeEventListener(Event.ADDED_TO_STAGE,onAddedHandler);
+		addEventListener(Event.REMOVED_FROM_STAGE,onRemovedHandler,false,0,true);
+		initialize();
+	}
+	
+	function onRemovedHandler(event:Event):Void
+	{
+		removeEventListener(Event.REMOVED_FROM_STAGE,onRemovedHandler);
+		Lib.current.stage.removeEventListener(KeyboardEvent.KEY_UP, keyHandler);
+	}
+	
+	public function initialize():Void
+	{
+		
+		testCounter=0;
+		testLength=3;
+		Lib.current.stage.addEventListener(KeyboardEvent.KEY_UP, keyHandler);
+		testContainer=new Sprite();
+		addChild(testContainer);		
+		//jeash display list problem, parent not present and on added not fired :(
+		loadTestCase();
+		//haxe.Timer.delay(loadTestCase, 1);
+		//com.eclecticdesignstudio.motion.Actuate.timer(1).onComplete(loadTestCase);
+	}
+	
+	function keyHandler(event:KeyboardEvent):Void
+	{
+		if (event.keyCode == Keyboard.PAGE_UP)
+		{
+	    	testCounter++;
+	    	loadTestCase();
+		}
+		else if (event.keyCode == Keyboard.PAGE_DOWN)
+		{
+	    	testCounter--;
+	    	loadTestCase();
+		}
+	}
+	
+	function loadTestCase():Void
+	{
+		if (test != null)
+		{
+			if(testContainer.contains(test))
+	    		testContainer.removeChild(test);
+	    	test=null;
+		}
+		if (testCounter > testLength)
+		{
+		   testCounter=0;
+		}
+		else if (testCounter < 0)
+		{
+		   testCounter=testLength;
+		}				
+			
+		#if debug
+		L.info("Running test #" + testCounter);
+		#end
+		
+		switch(testCounter)
+		{
+			case 0:
+			{	
+				test=new RenderBitmapTest();			
+			}
+			case 1:
+			{
+				test=new RenderSpriteTest();				
+			}
+			case 2:
+			{
+				test=new PhysicsNapeTest();
+			}
+			case 3:
+			{
+				test=new PhysicsBox2DTest();	
+			}
+			case 4:
+			{
+				//test=new PhysicsMotorTest();	
+			}
+		}
+		if(test != null)
+			testContainer.addChild(test);
+	}
+}

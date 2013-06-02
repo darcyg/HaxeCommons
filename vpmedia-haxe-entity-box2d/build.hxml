@@ -1,0 +1,19 @@
+################################################################################
+# Haxe Build Script
+# author: Andras Csizmadia <www.vpmedia.eu>      
+# version: 1.0.0
+################################################################################
+
+#######################################
+# Compile FL swc library
+#######################################
+-swf bin/vpmedia-haxe-ecs-box2d.swc
+-swf-version 11.5
+-cp src/main/haxe
+-cp ../HaxeCore/src/main/haxe/
+-cp ../HaxeECS/src/main/haxe/
+-lib box2d
+-lib openfl
+--macro include("hu.vpmedia")
+--flash-strict
+-debug

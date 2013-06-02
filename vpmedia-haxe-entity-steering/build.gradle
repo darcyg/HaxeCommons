@@ -1,0 +1,110 @@
+////////////////////////////////////////////////////////////////////////////////
+//=BEGIN MIT LICENSE
+//
+// The MIT License
+// 
+// Copyright (c) 2012-2013 Andras Csizmadia
+// http://www.vpmedia.eu
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+//=END MIT LICENSE
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////
+// Main project
+////////////////////
+
+defaultTasks 'assemble'
+    
+version = '1.0-SNAPSHOT'
+
+group = 'hu.vpmedia.haxe'      
+
+////////////////////
+// Init Cycle
+////////////////////
+
+// Clean target dirs
+task (clean, type: Delete) << {
+    file('bin').deleteDir() 
+    file('build').deleteDir()
+}
+
+// Create target dirs
+task (init) << {
+    file('bin').mkdirs()
+    file('build').mkdirs()
+}
+
+////////////////////
+// Compile Cycle
+////////////////////
+
+// Compile project to swc
+task (compile, type:Exec) {
+  ext.outputFile = file('bin/' + project.name + '.swc')
+  if (!outputFile.isFile()) {
+    outputFile.parentFile.mkdirs()
+  }
+  commandLine = ['haxe', 'build.hxml']
+} 
+
+////////////////////
+// Test Cycle
+////////////////////
+
+task (test) {
+} 
+
+// Generate unit test suites
+task (testGen, type:Exec) {
+  commandLine = ['haxelib', 'run', 'munit', 'gen']
+}
+
+// Compile unit tests
+task (testCompile, type:Exec) {
+  commandLine = ['haxe', 'test.hxml']
+} 
+
+// Generate report from compiled unit tests
+task (testReport, type:Exec) {
+  commandLine = ['haxelib', 'run', 'munit', 'report', 'teamcity']
+}
+
+// Run compiled unit tests
+task (testRun, type:Exec) {
+  commandLine = ['haxelib', 'run', 'munit', 'test']
+}
+
+test.dependsOn testReport
+testReport.dependsOn testRun
+testRun.dependsOn testCompile
+testCompile.dependsOn testGen
+
+////////////////////
+// Assemble Cycle
+////////////////////
+
+task (assemble) {
+} 
+
+init.dependsOn clean
+compile.dependsOn init
+assemble.dependsOn compile
