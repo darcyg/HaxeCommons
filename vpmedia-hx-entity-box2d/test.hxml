@@ -15,7 +15,7 @@
 -lib box2d
 -lib munit
 -lib hamcrest
--lib nme
+-lib openfl
 -swf-version 11.5
 -swf build/as3_test.swf
 -debug
