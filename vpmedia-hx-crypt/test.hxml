@@ -12,7 +12,6 @@
 -cp src/test/haxe
 -lib munit
 -lib hamcrest
--lib msignal
 -swf-version 11.5
 -swf build/as3_test.swf
 -debug
